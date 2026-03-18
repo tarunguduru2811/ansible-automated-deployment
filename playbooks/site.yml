@@ -1,0 +1,7 @@
+---
+- name: Deploy Simple Website
+  hosts: webservers
+  become: yes
+
+  roles:
+    - webserver

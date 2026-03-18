@@ -1,0 +1,67 @@
+# tasks file for webserver
+---
+# Install Nginx and Git
+- name: Install Nginx and Git
+  apt:
+    name:
+      - nginx
+      - git
+    state: present
+    update_cache: yes
+  become: yes
+
+# Clone the website from GitHub
+- name: Clone or update website from GitHub
+  git:
+    repo: "{{ website_git_repo }}"
+    dest: "{{ website_dest }}"
+    version: main
+    update: yes
+  become: yes
+
+# Configure Nginx to serve the website
+- name: Configure Nginx from template
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/sites-available/default
+  notify:
+    - Restart Nginx
+  become: yes
+
+# Ensure Nginx is running
+- name: Ensure Nginx is started and enabled
+  service:
+    name: nginx
+    state: started
+    enabled: yes
+  become: yes
+
+#Install Certbot
+- name: Install Certbpt and Nginx plugin
+  apt:
+    name:
+      - certbot
+      - python3-certbot-nginx
+    state: present
+    update_cache: yes
+  become: yes
+
+#Obtain SSL Certificate
+- name: Obtain SSL Certificate from Let's Encrypt
+  command: >
+    certbot --nginx -n --agree-tos --redirect 
+    --email test.keycloak.2000@gmail.com 
+    -d {{ server_name }}
+  become: yes
+  args:
+    creates: "/etc/letsencrypt/live/{{ server_name }}/fullchain.pem"
+
+#Automatic Renewal
+- name: Setup Automatic Certificate renewal
+  cron:
+    name: "Renew Let's Encrypt certificates"
+    job: "certbot renew --quiet"
+    minute: 0
+    hour: 3
+  become: yes
+

@@ -1,0 +1,29 @@
+# HTTP (port 80) configuration for redirection to HTTPS
+server {
+    listen 80;
+    server_name {{ server_name }};
+
+    # Redirect HTTP to HTTPS
+    return 301 https://$host$request_uri;
+}
+
+# HTTPS (port 443) configuration
+server {
+    listen 443 ssl;
+    server_name {{ server_name }};
+
+    # SSL Configuration
+    ssl_certificate /etc/letsencrypt/live/{{ server_name }}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/{{ server_name }}/privkey.pem;
+    
+    # Supported SSL protocols
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    
+    root /var/www/html;  # Adjust this if your website is located elsewhere
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}

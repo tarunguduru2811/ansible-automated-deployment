@@ -1,0 +1,5 @@
+---
+# defaults file for webserver
+website_git_repo: "https://github.com/tarunguduru2811/weatherApp.git"
+website_dest: "/var/www/html"
+server_name: "tarun2811.crabdance.com"
